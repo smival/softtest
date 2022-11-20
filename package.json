@@ -1,0 +1,41 @@
+{
+  "name": "softtest",
+  "version": "0.0.3",
+  "description": "test project",
+  "main": "index.js",
+  "scripts": {
+    "versionPatch": "npm version patch",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.dev.js",
+    "build-prod": "webpack --config webpack.prod.js",
+    "start": "webpack-dev-server --hot=true --config webpack.dev.js"
+  },
+  "keywords": [],
+  "author": "smival",
+  "license": "ISC",
+  "dependencies": {
+    "@pixi/particle-emitter": "^5.0.7",
+    "@types/stats": "0.16.30",
+    "@types/gsap": "1.20.2",
+    "fontfaceobserver": "^2.3.0",
+    "pixi-tagged-text": "^3.8.0",
+    "pixi.js": "^6.5.4",
+    "stats.js": "^0.17.0",
+    "style-ext-html-webpack-plugin": "^4.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.7",
+    "gsap": "2.1.3",
+    "before-build-webpack": "^0.2.13",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.6.1",
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.8.3",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1",
+    "webpack-merge": "^5.8.0"
+  }
+}
