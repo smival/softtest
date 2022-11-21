@@ -25,7 +25,11 @@ export class GameStarter
         this._pagesMap.set("item1", new Page1());
         this._pagesMap.set("item2", new Page2());
 
-        this._renderer = autoDetectRenderer({width: 800, height: 600, backgroundColor: 0x1099bb});
+        this._renderer = autoDetectRenderer({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            backgroundColor: 0x1099bb}
+        );
         this._stage = new Container();
         this._stats = new Stats();
         //this._stats.dom.style.left = "1200px";

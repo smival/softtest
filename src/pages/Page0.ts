@@ -41,8 +41,6 @@ export class Page0 extends BasePage
             this.makeNewAnimation(this._deck0, this._deck1);
         }, this._nextItemDelay);
         this.makeNewAnimation(this._deck0, this._deck1);
-
-
     }
 
     protected makeNewAnimation(fromDeck: Deck, toDeck: Deck): void
