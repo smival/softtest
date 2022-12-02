@@ -1,23 +1,32 @@
-import {AbstractRenderer, autoDetectRenderer, Container, DisplayObject, InteractionEvent, Loader} from "pixi.js";
+import {
+    AbstractRenderer,
+    autoDetectRenderer,
+    Container,
+    DisplayObject,
+    InteractionEvent,
+    Loader,
+    Rectangle
+} from "pixi.js";
 import Stats from "stats.js";
-import {Box} from "./view/Box";
+import {Box, BoxLayout} from "./view/Box";
 import {Button} from "./view/Button";
 import {Page0} from "./pages/Page0";
 import {Page1} from "./pages/Page1";
 import {Page2} from "./pages/Page2";
 import {BasePage} from "./pages/BasePage";
 
-export class GameStarter
+export class App
 {
-    private _stage: Container;
+    private readonly _stage: Container;
+    private _pagesMap: Map<string, BasePage> = new Map<string, BasePage>();
     private _renderer: AbstractRenderer;
     private _stats: Stats;
     private _uiBox: Box;
     private _contentContainer: Container;
-    private _pagesMap: Map<string, BasePage> = new Map<string, BasePage>();
     private _currentButton: Button;
     private _currentPage: BasePage;
     private _elapsedTime: number = Date.now();
+    private _appSize: Rectangle = new Rectangle();
 
     constructor()
     {
@@ -32,11 +41,21 @@ export class GameStarter
         );
         this._stage = new Container();
         this._stats = new Stats();
-        //this._stats.dom.style.left = "1200px";
+        this._stats.dom.style.left = "10px";
+        this._stats.dom.style.top = "10px";
 
         document.body.appendChild(this._renderer.view);
         document.body.appendChild(this._stats.dom);
         this.render();
+    }
+
+    public resize(width: number, height: number): void
+    {
+        this._renderer.resize(width, height);
+        this._appSize.width = width;
+        this._appSize.height = height;
+
+        this.alignAndResizePage();
     }
 
     public async start(): Promise<void>
@@ -46,13 +65,14 @@ export class GameStarter
         await Promise.all([font.load(), this.loadAssets()]);
 
         this._uiBox = new Box();
+        this._uiBox.layout = BoxLayout.Horizontal;
         this._uiBox.addChild(new Button("item0").setText("Decks"))
             .addListener("pointerdown", (e) => this.onButtonDown(e));
         this._uiBox.addChild(new Button("item1").setText("Img&Text"))
             .addListener("pointerdown", (e) => this.onButtonDown(e));
         this._uiBox.addChild(new Button("item2").setText("Flame"))
             .addListener("pointerdown", (e) => this.onButtonDown(e));
-        this._uiBox.position.set(10, 60);
+        this._uiBox.position.set(100, 10);
 
         this._contentContainer = new Container<DisplayObject>();
         this.stage.addChild(this._contentContainer);
@@ -90,8 +110,24 @@ export class GameStarter
         this._currentPage = page;
         page.create();
         this._contentContainer.addChild(page);
-        page.position.x = this._renderer.options.width / 2 - page.width / 2;
-        page.position.y = this._renderer.options.height / 2 - page.height / 2;
+        this.alignAndResizePage();
+    }
+
+    private alignAndResizePage(): void
+    {
+        if (!this._currentPage) return;
+
+        const {width, height} = this._currentPage.contentArea;
+        const appWidth = this._appSize.width - 40;
+        const appHeight = this._appSize.height - 40;
+        let scale: number = Math.min(appWidth / width, appHeight / height);
+        scale = scale > 1 ? 1 : scale;
+
+        this._currentPage.scale.set(scale, scale);
+        this._currentPage.position.x =
+            this._renderer.width * 0.5 - this._currentPage.width * this._currentPage.scale.x * 0.5;
+        this._currentPage.position.y =
+            this._renderer.height * 0.5 - this._currentPage.height * this._currentPage.scale.y * 0.5;
     }
 
     public get stage(): Container

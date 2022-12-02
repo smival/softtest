@@ -5,19 +5,18 @@ import {BasePage} from "./BasePage";
 
 export class Page0 extends BasePage
 {
-    private _timer: NodeJS.Timer;
-    private readonly _nextItemDelay: number = 1000; //msec
+    private readonly _spawnDelay: number = 1; // sec
     private readonly _itemAnimTime: number = 2; // sec
-    private readonly _cardTexture = Texture.from("card.png");
     private readonly _cardsCount: number = 144;
+    private readonly _cardTexture = Texture.from("card.png");
     private readonly _animLayer: Container = new Container();
-    private readonly _deck0: Deck = new Deck();
-    private readonly _deck1: Deck = new Deck();
-
+    private _deck0: Deck = new Deck();
+    private _deck1: Deck = new Deck();
     private _cards: Sprite[] = [];
 
     public create(): void
     {
+        super.create();
         let n = 0;
         if (!this._cards.length) {
             while (n < this._cardsCount) {
@@ -30,22 +29,22 @@ export class Page0 extends BasePage
         {
             this._deck0.addChild(item);
         })
-        this._deck0.position.x = -150;
-        this._deck1.position.x = 150;
+        this._deck0.position.set(40, 150);
+        this._deck1.position.set(340, 150);
         this.addChild(this._deck0);
         this.addChild(this._deck1);
         this.addChild(this._animLayer);
 
-        this._timer = setInterval(() =>
-        {
-            this.makeNewAnimation(this._deck0, this._deck1);
-        }, this._nextItemDelay);
         this.makeNewAnimation(this._deck0, this._deck1);
     }
 
     protected makeNewAnimation(fromDeck: Deck, toDeck: Deck): void
     {
-        const sprite = fromDeck.getChildAt(fromDeck.children.length - 1);
+        const sprite = fromDeck.getTopChild();
+        if (!sprite) {
+            return;
+        }
+
         toDeck.assignChild(sprite);
         const toPoint = toDeck.getNextPosition(this._animLayer);
         const fromPoint = fromDeck.getCurrentPosition(this._animLayer);
@@ -62,13 +61,34 @@ export class Page0 extends BasePage
     protected onFinishAnimation(obj: Sprite, to: Deck): void
     {
         to.addChild(obj);
+        if (this.isAllAnimationsFinished) { // revers animations
+            [this._deck0, this._deck1] = [this._deck1, this._deck0];
+        }
     }
 
-    public update(dt: number): void {}
+    protected get isAllAnimationsFinished(): boolean
+    {
+        return this._deck1.children.length == this._cards.length;
+    }
+
+    public update(dt: number): void
+    {
+        super.update(dt);
+        if(this._totalTime >= this._spawnDelay) {
+            this.makeNewAnimation(this._deck0, this._deck1);
+            this._totalTime = 0;
+        }
+    }
+
     public clean()
     {
         super.clean();
-        this._cards.forEach(item => TweenMax.killTweensOf(item));
-        clearInterval(this._timer);
+        this._cards.forEach(item => {
+            TweenMax.killTweensOf(item);
+            TweenMax.killTweensOf(item.scale);
+            item.scale.set(1,1);
+        });
+        this._deck0.unAssignAll();
+        this._deck1.unAssignAll();
     }
 }

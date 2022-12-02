@@ -5,19 +5,6 @@ export class Deck extends Container<Sprite>
     private readonly _dx: number = 0.5;
     private _assignedChildren: Sprite[] = [];
 
-    public onChildrenChange(): void
-    {
-        this.children?.forEach(item =>
-        {
-            item.position.copyFrom(this.getPositionByIndex(this.getChildIndex(item)));
-        });
-    }
-
-    protected getPositionByIndex(index: number): Point
-    {
-        return new Point(index * this._dx, index * this._dx);
-    }
-
     public getCurrentPosition(cont: Container): Point
     {
         let result;
@@ -29,15 +16,20 @@ export class Deck extends Container<Sprite>
         return cont.toLocal(this.toGlobal(result));
     }
 
-    public getNextPosition(relativelyСont: Container): Point
+    public getNextPosition(relativelyCont: Container): Point
     {
         const result = this.getPositionByIndex(this.children.length + this._assignedChildren.length - 1);
-        return relativelyСont.toLocal(this.toGlobal(result));
+        return relativelyCont.toLocal(this.toGlobal(result));
     }
 
     public assignChild(sprite: Sprite): void
     {
         this._assignedChildren.push(sprite);
+    }
+
+    public unAssignAll(): void
+    {
+        this._assignedChildren = [];
     }
 
     public addChild<U extends Sprite[]>(...children): U[0]
@@ -49,5 +41,23 @@ export class Deck extends Container<Sprite>
             }
         });
         return super.addChild(...children);
+    }
+
+    public getTopChild(): Sprite | null
+    {
+        return this.children.length ? this.getChildAt(this.children.length - 1) : null;
+    }
+
+    protected onChildrenChange(): void
+    {
+        this.children?.forEach(item =>
+        {
+            item.position.copyFrom(this.getPositionByIndex(this.getChildIndex(item)));
+        });
+    }
+
+    protected getPositionByIndex(index: number): Point
+    {
+        return new Point(index * this._dx, index * this._dx);
     }
 }

@@ -1,4 +1,13 @@
-import {GameStarter} from "./GameStarter";
+import {App} from "./App";
 
-const starter = new GameStarter();
-starter.start().then();
+const game = new App();
+const resize = () => {
+    game.resize(
+        window.innerWidth,
+        window.innerHeight);
+};
+
+game.start().then(() => {
+    window.addEventListener("resize", resize);
+    resize();
+});

@@ -1,67 +1,46 @@
-import {TextStyleExtended, TextStyleSet} from "pixi-tagged-text/dist/types";
-import TaggedText from "pixi-tagged-text";
 import {BasePage} from "./BasePage";
+import {ITextStyle, Text} from "@pixi/text";
+import {Box, BoxLayout} from "../view/Box";
+import {Sprite, Texture} from "pixi.js";
 
 export class Page1 extends BasePage
 {
-    private _timer: NodeJS.Timer;
-    private readonly _blockToGen: number = 3;
-    private readonly _tagsCount: number = 5;
-    private _texts: string[] = [`<tag5>some random</tag5>`, `<tag1>Fahrprüfung</tag1>`, `<tag2>lorem ipsum</tag2>`,
-        `<tag3>text for fun</tag3>`, `<tag4>drunken penguins</tag4>`, `<ninja/>`, `<emo/>`, `<clock/>`, `<beer/>`, `<shy/>`];
-    private _textStyle: TextStyleSet = {
-        default: {
-            fontFamily: 'Roboto Condensed',
-            fontSize: "24px",
-            fill: "#FFFFCC",
-            align: "left",
-            valign: "middle",
-            lineSpacing: 0,
-            wordWrap: true,
-            wordWrapWidth: 300
-        },
-        tag1: {fontSize: "24px"},
-        tag2: {fontSize: "24px"},
-        tag3: {fontSize: "24px"},
-        tag4: {fontSize: "24px"},
-        tag5: {fontSize: "24px"}
+    private readonly _spawnDelay: number = 2; // sec
+    private readonly _blocksToGen: number = 3;
+    private readonly _box: Box = new Box();
+
+    private readonly _texts: string[] = [`random text`, `Fahrprüfung`, `lorem ipsum`,
+        `text for fun`, `drunken penguins`, `ninja.png`, `emo.png`, `clock.png`, `beer.png`, `shy.png`];
+    private readonly _textStyle: Partial<ITextStyle> = {
+        fontFamily: 'Roboto Condensed',
+        fontSize: 18,
+        fill: 0xFFFF,
+        align: 'center'
     };
+    private readonly imageRegExp = /\.(jpe?g|png|gif)$/i;
 
     public create(): void
     {
+        super.create();
+        const randomSize = 18 + Math.floor(Math.random() * 30);
+
+        this._box.layout = BoxLayout.Horizontal;
+        this._textStyle.fontSize = randomSize;
         this._texts.sort(this.randomSort);
-        let text = "";
-        let n = this._blockToGen;
+        let n = this._blocksToGen;
         while (n) {
-            text += this._texts[n] + " ";
-            n--;
-        }
-        n = this._tagsCount;
-        while (n) {
-            const style: TextStyleExtended = this._textStyle[`tag${n}`];
-            if (style) {
-                style.fontSize = 18 + Math.floor(Math.random() * 30);
+            if (this.imageRegExp.test(this._texts[n])) {
+                const img = Sprite.from(Texture.from(this._texts[n]));
+                img.height = randomSize;
+                img.scale.x = img.scale.y;
+                this._box.addChild(img);
+            } else {
+                this._box.addChild(new Text(this._texts[n], this._textStyle));
             }
             n--;
         }
-        const textField = new TaggedText(text, this._textStyle, {
-            //debug: true,
-            imgMap: {
-                clock: "clock.png",
-                emo: "emo.png",
-                beer: "beer.png",
-                shy: "shy.png",
-                ninja: "ninja.png"
-            }
-        });
-
-        this._timer = setInterval(() =>
-        {
-            this.clean();
-            this.create();
-        }, 2000);
-
-        this.addChild(textField);
+        this.addChild(this._box);
+        this._box.position.set(0, 280);
     }
 
     private randomSort(): number
@@ -71,12 +50,17 @@ export class Page1 extends BasePage
 
     public update(dt: number): void
     {
-
+        super.update(dt);
+        if(this._totalTime >= this._spawnDelay) {
+            this.clean();
+            this.create();
+            this._totalTime = 0;
+        }
     }
 
     public clean()
     {
         super.clean();
-        clearInterval(this._timer);
+        this._box.removeChildren();
     }
 }

@@ -71,6 +71,7 @@ export class Button extends Container
         graphics.drawRoundedRect(0, 0,
             this._textField.width + this._padding * 2,
             this._textField.height + this._padding * 2, 15);
+        graphics.endFill();
 
         this.addChildAt(graphics, index);
         return graphics;
